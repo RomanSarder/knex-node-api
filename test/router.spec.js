@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const should = chai.should();
+const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const server = require('../index');
 const { SHA256 } = require('crypto-js');
@@ -139,7 +140,7 @@ describe('API routes', () => {
         });
     });
     describe('POST /items', () => {
-        it('should save item to db and return it if token provided', () => {
+        it('should save item to db and return it if valid token provided', (done) => {
             let item = {
                 name: 'Bike',
                 number: 13,
@@ -147,12 +148,49 @@ describe('API routes', () => {
             };
             chai.request(server).post('/api/items')
                 .send({
-                    ...item,
-                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInBhc3N3b3JkIjoiMThhMDI1YTZmYTZjMmEwNDZmZTM1ZDUyMWNiMjI5ZDM5YjI4NGE5NjdlY2I5ZjJmOGU1MGM1NjM1YTM0YzE0NCIsIm5hbWUiOiJSb21hbiIsImVtYWlsIjoicm9tYW5AeWEucnUiLCJpYXQiOjE0OTM2Mzg3NjksImV4cCI6MTQ5MzcyNTE2OX0.uSpIVTr8FnS6ltX6I53NnbBwAPsLAHOS3XPv0wJhe_Q
+                    name: item.name,
+                    number: item.number,
+                    state: item.state,
+                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInBhc3N3b3JkIjoiMThhMDI1YTZmYTZjMmEwNDZmZTM1ZDUyMWNiMjI5ZDM5YjI4NGE5NjdlY2I5ZjJmOGU1MGM1NjM1YTM0YzE0NCIsIm5hbWUiOiJSb21hbiIsImVtYWlsIjoicm9tYW5AeWEucnUiLCJpYXQiOjE0OTM2Mzg3NjksImV4cCI6MTQ5MzcyNTE2OX0.uSpIVTr8FnS6ltX6I53NnbBwAPsLAHOS3XPv0wJhe_Q"
                 })
                 .then((res) => {
-
+                    res.body.name.should.equal(item.name);
+                    res.body.number.should.equal(item.number);
+                    res.body.state.should.equal(item.state);
+                    res.body.logs.should.be.a('array');
+                    res.body.logs[0].should.have.property('action');
+                    res.body.logs[0].should.have.property('time');
+                    res.body.logs[0].time.should.be.a('number');
+                    res.body.logs[0].action.should.be.a('string');
+                    done();
+                }).catch(done);
+        });
+        it('should not save item to db and return it if invalid token provided', (done) => {
+            let item = {
+                name: 'Bike',
+                number: 13,
+                state: 0
+            };
+            chai.request(server).post('/api/items')
+                .send({
+                    name: item.name,
+                    number: item.number,
+                    state: item.state,
+                    token: "adsadafafasfasf131231"
                 })
+                .then((res) => {
+                    res.body.should.have.property('message');
+                    res.body.message.should.be.a('string');
+                    res.body.message.should.equal('Invalid token provided');
+                })
+                .then(() => {
+                    return knex('items').where('name', item.name).first()
+                })
+                .then((item) => {
+                    expect(item).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
         });
     });
 });

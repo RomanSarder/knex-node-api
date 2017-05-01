@@ -1,5 +1,6 @@
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const knex = require('../db/db');
 
 let validateRegisterInput = (req, res, next) => {
     let name = req.body.name;
@@ -27,12 +28,20 @@ let validateLoginInput = (req, res, next) => {
     }
 }
 let isLogged = (req, res, next) => {
-    if (req.body.token) {
-        next();
-    } else {
-        next(new Error('You are not authorized'));
-    }
-
+    jwt.verify(req.body.token, 'supersecret', (err, decoded) => {
+        if (err) {
+            next(new Error('Invalid token provided'));
+        } else {
+            knex('users').where('email', decoded.email).first()
+                .then((user) => {
+                    if (user) {
+                        next()
+                    } else {
+                        next(new Error('You must log in'))
+                    }
+                })
+        }
+    })
 }
 
 module.exports = {
