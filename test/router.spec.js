@@ -47,7 +47,7 @@ describe('API routes', () => {
                 }).then(() => {
                     return knex('users').where('email', 'roman.sarder@yandex.ru').first()
                 }).then((user) => {
-                    let token = jwt.sign(user, user.email, { expiresIn: '24h' });
+                    let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
                     response.body.token.should.equal(token);
                     user.name.should.equal('Roman');
                     user.email.should.equal('roman.sarder@yandex.ru');
@@ -94,7 +94,7 @@ describe('API routes', () => {
                     return knex('users').where('email', 'roman@ya.ru').first()
                 })
                 .then((user) => {
-                    let token = jwt.sign(user, user.email, { expiresIn: '24h' });
+                    let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
                     response.body.token.should.equal(token);
                     done();
                 })
@@ -136,6 +136,23 @@ describe('API routes', () => {
                     res.body[2].state.should.equal(1);
                     done();
                 }).catch(done);
+        });
+    });
+    describe('POST /items', () => {
+        it('should save item to db and return it if token provided', () => {
+            let item = {
+                name: 'Bike',
+                number: 13,
+                state: 0
+            };
+            chai.request(server).post('/api/items')
+                .send({
+                    ...item,
+                    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInBhc3N3b3JkIjoiMThhMDI1YTZmYTZjMmEwNDZmZTM1ZDUyMWNiMjI5ZDM5YjI4NGE5NjdlY2I5ZjJmOGU1MGM1NjM1YTM0YzE0NCIsIm5hbWUiOiJSb21hbiIsImVtYWlsIjoicm9tYW5AeWEucnUiLCJpYXQiOjE0OTM2Mzg3NjksImV4cCI6MTQ5MzcyNTE2OX0.uSpIVTr8FnS6ltX6I53NnbBwAPsLAHOS3XPv0wJhe_Q
+                })
+                .then((res) => {
+
+                })
         });
     });
 });

@@ -1,4 +1,5 @@
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
 
 let validateRegisterInput = (req, res, next) => {
     let name = req.body.name;
@@ -25,8 +26,17 @@ let validateLoginInput = (req, res, next) => {
         next();
     }
 }
+let isLogged = (req, res, next) => {
+    if (req.body.token) {
+        next();
+    } else {
+        next(new Error('You are not authorized'));
+    }
+
+}
 
 module.exports = {
     validateRegisterInput,
-    validateLoginInput
+    validateLoginInput,
+    isLogged
 }

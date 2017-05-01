@@ -16,7 +16,7 @@ router.post('/login', middleware.validateLoginInput, (req, res, next) => {
             if (!user) {
                 throw new Error('Email is incorrect');
             } else if (user.password === password) {
-                let token = jwt.sign(user, email, { expiresIn: '24h' });
+                let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
                 return token;
             } else {
                 throw new Error('Password is incorrect');
@@ -41,7 +41,7 @@ router.post('/register', middleware.validateRegisterInput, (req, res, next) => {
             }).returning('*')
         })
         .then((user) => {
-            let token = jwt.sign(user[0], req.body.email, { expiresIn: '24h' });
+            let token = jwt.sign(user[0], 'supersecret', { expiresIn: '24h' });
             return token;
         })
         .then((token) => {
