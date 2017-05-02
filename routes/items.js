@@ -46,8 +46,34 @@ router.post('/', middleware.isLogged, (req, res, next) => {
             next(err);
         })
 });
-router.patch('/:id', (req, res, next) => {
-    res.send('PATCH route for one item');
+router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) => {
+    knex('items').where('author_id', req.params.id).first()
+        .then((item) => {
+            if (!item) {
+                let err = new Error('Not Found');
+                err.status = 404;
+                next(err);
+            } else {
+                let name = req.body.name || item.name;
+                let number = req.body.number || item.number;
+                let state = req.body.state || item.state;
+                let logs = item.logs;
+                logs.push({ action: "Edit", time: new Date().getTime() })
+                logs = JSON.stringify(logs);
+                return knex('items').where('id', req.params.id).update({
+                    name,
+                    number,
+                    state,
+                    logs
+                }).returning('*')
+            }
+        })
+        .then((updated) => {
+            res.send(updated[0]);
+        })
+        .catch((err) => {
+            next(err);
+        })
 });
 router.delete('/:id', (req, res, next) => {
     res.send('DEL route for one item');

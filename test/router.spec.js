@@ -9,16 +9,26 @@ const server = require('../index');
 const { SHA256 } = require('crypto-js');
 const knex = require('../db/db');
 const jwt = require('jsonwebtoken');
+let token;
+let sectoken;
 
-chai.use(chaiHttp);
 
 describe('API routes', () => {
     beforeEach(function(done) {
         knex.migrate.rollback().then(function() {
             knex.migrate.latest().then(function() {
                 return knex.seed.run().then(function() {
-                    done();
-                });
+                    return knex('users').where('email', 'roman@ya.ru').first()
+                        .then((user) => {
+                            token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
+                            return knex('users').where('email', 'mike@ya.ru').first();
+                        }).then((mike) => {
+                            sectoken = jwt.sign(mike, 'supersecret', { expiresIn: '24h' });
+                        }).then(() => {
+                            done();
+                        })
+                })
+
             });
         });
     });
@@ -32,14 +42,14 @@ describe('API routes', () => {
     describe('POST /register', () => {
         it('Should register user and return token', (done) => {
             let response;
-            chai.request(server).post('/api/register')
+            request(server).post('/api/register')
                 .send({
                     name: 'Roman',
                     email: 'roman.sarder@yandex.ru',
                     password: '1234'
                 })
+                .expect(200)
                 .then((res) => {
-                    res.should.have.status(200);
                     res.should.be.json;
                     res.body.should.be.a('object');
                     res.body.should.have.property('token');
@@ -84,13 +94,13 @@ describe('API routes', () => {
     describe('POST /login', () => {
         it('it should return token if user exists in db', (done) => {
             let response;
-            chai.request(server).post('/api/login')
+            request(server).post('/api/login')
                 .send({
                     email: 'roman@ya.ru',
                     password: '123'
                 })
+                .expect(200)
                 .then((res) => {
-                    res.should.have.status(200);
                     res.body.should.have.property('token');
                     res.body.token.should.be.a('string');
                     response = res;
@@ -121,23 +131,23 @@ describe('API routes', () => {
     });
     describe('GET /items', () => {
         it('should return all existing items from db', (done) => {
-            chai.request(server).get('/api/items')
+            request(server).get('/api/items')
                 .then((res) => {
                     res.body.length.should.equal(3);
                     res.body[0].name.should.equal('Notebook');
                     res.body[0].number.should.equal(12);
                     res.body[0].author_id.should.equal(1);
-                    res.body[0].logs.should.be.a('object');
+                    res.body[0].logs.should.be.a('array');
                     res.body[0].state.should.equal(1);
                     res.body[1].name.should.equal('Gyroscooter');
                     res.body[1].number.should.equal(2);
                     res.body[1].author_id.should.equal(2);
-                    res.body[1].logs.should.be.a('object');
+                    res.body[1].logs.should.be.a('array');
                     res.body[1].state.should.equal(0);
                     res.body[2].name.should.equal('Macbook');
                     res.body[2].number.should.equal(5);
                     res.body[2].author_id.should.equal(3);
-                    res.body[2].logs.should.be.a('object');
+                    res.body[2].logs.should.be.a('array');
                     res.body[2].state.should.equal(1);
                     done();
                 }).catch(done);
@@ -150,12 +160,12 @@ describe('API routes', () => {
                 number: 13,
                 state: 0
             };
-            chai.request(server).post('/api/items')
+            request(server).post('/api/items')
                 .send({
                     name: item.name,
                     number: item.number,
                     state: item.state,
-                    token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOjEsInBhc3N3b3JkIjoiMThhMDI1YTZmYTZjMmEwNDZmZTM1ZDUyMWNiMjI5ZDM5YjI4NGE5NjdlY2I5ZjJmOGU1MGM1NjM1YTM0YzE0NCIsIm5hbWUiOiJSb21hbiIsImVtYWlsIjoicm9tYW5AeWEucnUiLCJpYXQiOjE0OTM2Mzg3NjksImV4cCI6MTQ5MzcyNTE2OX0.uSpIVTr8FnS6ltX6I53NnbBwAPsLAHOS3XPv0wJhe_Q"
+                    token: token
                 })
                 .then((res) => {
                     res.body.name.should.equal(item.name);
@@ -200,21 +210,61 @@ describe('API routes', () => {
     });
     describe('GET /items/:id', () => {
         it('should return single item', (done) => {
-            chai.request(server).get('/api/items/1')
+            request(server).get('/api/items/1')
                 .then((res) => {
                     res.body.name.should.equal('Notebook');
                     res.body.number.should.equal(12);
                     res.body.state.should.equal(1);
-                    res.body.logs.should.be.a('object');
+                    res.body.logs.should.be.a('array');
                     res.body.should.have.property('author_id');
                     done()
                 })
                 .catch(done);
         });
-        it('should return 404 status code for item', (done) => {
+        it('should return 404 status code for item not found', (done) => {
             request(server)
                 .get('/api/items/404')
                 .expect(404, done)
+        });
+    });
+    describe('PATCH /items/:id', () => {
+        it('should update single item and return it if valid token provided', (done) => {
+            request(server)
+                .patch('/api/items/2')
+                .send({ name: 'Motorcycle', token: sectoken })
+                .expect(200)
+                .then((res) => {
+                    res.body.name.should.equal('Motorcycle');
+                    res.body.logs.length.should.equal(1);
+                    res.body.number.should.be.a('number');
+                    res.body.state.should.be.a('number');
+                    res.body.author_id.should.be.a('number');
+                    done();
+                })
+                .catch(done);
+        });
+        it('should return status code 404 if not found', (done) => {
+            request(server)
+                .patch('/api/items/40')
+                .send({ name: 'Motorcycle', token: sectoken })
+                .expect(404)
+                .then((res) => {
+                    res.body.should.have.property('message');
+                    res.body.message.should.be.a('string');
+                    done()
+                })
+                .catch(done)
+        })
+        it('should not update item if user doesnt own it', (done) => {
+            request(server)
+                .patch('/api/items/2')
+                .send({ name: 'Motorcycle', token: token })
+                .expect(403)
+                .then((res) => {
+                    res.body.should.have.property('message');
+                    res.body.message.should.be.a('string');
+                    done()
+                }).catch(done)
         });
     });
 });

@@ -28,6 +28,11 @@ let validateLoginInput = (req, res, next) => {
     }
 }
 let isLogged = (req, res, next) => {
+    if (!req.body.token) {
+        let err = new Error('You must log in');
+        err.status = 401;
+        next(err);
+    }
     jwt.verify(req.body.token, 'supersecret', (err, decoded) => {
         if (err) {
             next(new Error('Invalid token provided'));
@@ -35,6 +40,7 @@ let isLogged = (req, res, next) => {
             knex('users').where('email', decoded.email).first()
                 .then((user) => {
                     if (user) {
+                        req.user = user;
                         next()
                     } else {
                         next(new Error('You must log in'))
@@ -43,9 +49,26 @@ let isLogged = (req, res, next) => {
         }
     })
 }
+let isOwner = (req, res, next) => {
+    knex('items').where('id', req.params.id).first()
+        .then((item) => {
+            if (!item) {
+                let error = new Error('Not Found');
+                error.status = 404;
+                next(error);
+            } else if (req.user.uid !== parseInt(req.params.id)) {
+                let error = new Error('You dont have permission to do this');
+                error.status = 403;
+                next(error);
+            } else {
+                next();
+            }
+        })
+}
 
 module.exports = {
     validateRegisterInput,
     validateLoginInput,
-    isLogged
+    isLogged,
+    isOwner
 }

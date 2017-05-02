@@ -30,7 +30,7 @@ exports.seed = function(knex, Promise) {
             name: 'Notebook',
             number: 12,
             author_id: 1,
-            logs: "{}",
+            logs: "[]",
             state: 1
         });
     }).then(function() {
@@ -38,7 +38,7 @@ exports.seed = function(knex, Promise) {
             name: 'Gyroscooter',
             number: 2,
             author_id: 2,
-            logs: "{}",
+            logs: "[]",
             state: 0
         });
     }).then(function() {
@@ -46,7 +46,7 @@ exports.seed = function(knex, Promise) {
             name: 'Macbook',
             number: 5,
             author_id: 3,
-            logs: "{}",
+            logs: "[]",
             state: 1
         })
     });
