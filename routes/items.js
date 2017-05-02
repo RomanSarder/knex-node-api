@@ -75,8 +75,14 @@ router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) =
             next(err);
         })
 });
-router.delete('/:id', (req, res, next) => {
-    res.send('DEL route for one item');
+router.delete('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) => {
+    knex('items').where('id', req.params.id).del().returning('*')
+        .then((deleted) => {
+            res.send(deleted)
+        })
+        .catch((err) => {
+            next(err);
+        })
 })
 
 module.exports = router;

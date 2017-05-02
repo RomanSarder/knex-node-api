@@ -267,4 +267,48 @@ describe('API routes', () => {
                 }).catch(done)
         });
     });
+    describe('DELETE /items/:id', () => {
+        it('should delete item from db and return it if valid token provided', (done) => {
+            request(server)
+                .delete('/api/items/2')
+                .send({ token: sectoken })
+                .then((res) => {
+                    res.body.length.should.equal(1);
+                    res.body[0].should.be.a('object');
+                    knex('items').where('id', res.body[0].id).first()
+                })
+                .then((item) => {
+                    expect(item).to.be.a('undefined');
+                    done();
+                })
+                .catch(done);
+        });
+        it('should not delete item from db if user doesnt own it', (done) => {
+            request(server)
+                .delete('/api/items/2')
+                .send({ token: token })
+                .expect(403)
+                .then((res) => {
+                    res.body.should.have.property('message');
+                    res.body.message.should.be.a('string');
+                    return knex('items').where('id', '2').first();
+                })
+                .then((item) => {
+                    item.should.be.a('object');
+                    done();
+                })
+                .catch(done);
+        });
+        it('should return 404 if requested item doesnt exist', (done) => {
+            request(server)
+                .delete('/api/items/23')
+                .send({ token: sectoken })
+                .expect(404)
+                .then((res) => {
+                    res.body.should.have.property('message');
+                    res.body.message.should.be.a('string');
+                    done();
+                })
+        });
+    });
 });
