@@ -57,7 +57,7 @@ let isOwner = (req, res, next) => {
                 let error = new Error('Not Found');
                 error.status = 404;
                 next(error);
-            } else if (req.user.uid !== parseInt(req.params.id)) {
+            } else if (req.user.uid !== parseInt(item.author_id)) {
                 let error = new Error('You dont have permission to do this');
                 error.status = 403;
                 next(error);
