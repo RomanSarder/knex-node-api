@@ -177,8 +177,13 @@ describe('API routes', () => {
                     res.body.logs[0].should.have.property('time');
                     res.body.logs[0].time.should.be.a('number');
                     res.body.logs[0].action.should.be.a('string');
+                    return knex('items').where('name', 'Bike').first()
+                })
+                .then((item) => {
+                    item.author_id.should.equal(1);
                     done();
-                }).catch(done);
+                })
+                .catch(done);
         });
         it('should not save item to db and return it if invalid token provided', (done) => {
             let item = {

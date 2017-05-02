@@ -37,7 +37,8 @@ router.post('/', middleware.isLogged, (req, res, next) => {
             name,
             number,
             state,
-            logs
+            logs,
+            author_id: req.user.uid
         }).returning('*')
         .then((item) => {
             res.send(item[0]);
