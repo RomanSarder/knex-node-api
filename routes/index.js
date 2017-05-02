@@ -4,6 +4,7 @@ const knex = require('../db/db');
 const jwt = require('jsonwebtoken');
 const middleware = require('../middleware/index');
 const { SHA256 } = require('crypto-js');
+const secret = process.env.SECRET || 'supersecret';
 
 router.get('/', (req, res, next) => {
     res.send('Dashboard');
@@ -16,7 +17,7 @@ router.post('/login', middleware.validateLoginInput, (req, res, next) => {
             if (!user) {
                 throw new Error('Email is incorrect');
             } else if (user.password === password) {
-                let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
+                let token = jwt.sign(user, secret, { expiresIn: '24h' });
                 return token;
             } else {
                 throw new Error('Password is incorrect');
@@ -41,7 +42,7 @@ router.post('/register', middleware.validateRegisterInput, (req, res, next) => {
             }).returning('*')
         })
         .then((user) => {
-            let token = jwt.sign(user[0], 'supersecret', { expiresIn: '24h' });
+            let token = jwt.sign(user[0], secret, { expiresIn: '24h' });
             return token;
         })
         .then((token) => {

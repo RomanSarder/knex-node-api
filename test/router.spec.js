@@ -9,6 +9,7 @@ const server = require('../index');
 const { SHA256 } = require('crypto-js');
 const knex = require('../db/db');
 const jwt = require('jsonwebtoken');
+const secret = process.env.SECRET || 'supersecret';
 let token;
 let sectoken;
 
@@ -20,10 +21,10 @@ describe('API routes', () => {
                 return knex.seed.run().then(function() {
                     return knex('users').where('email', 'roman@ya.ru').first()
                         .then((user) => {
-                            token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
+                            token = jwt.sign(user, secret, { expiresIn: '24h' });
                             return knex('users').where('email', 'mike@ya.ru').first();
                         }).then((mike) => {
-                            sectoken = jwt.sign(mike, 'supersecret', { expiresIn: '24h' });
+                            sectoken = jwt.sign(mike, secret, { expiresIn: '24h' });
                         }).then(() => {
                             done();
                         })
@@ -59,7 +60,7 @@ describe('API routes', () => {
                 }).then(() => {
                     return knex('users').where('email', 'roman.sarder@yandex.ru').first()
                 }).then((user) => {
-                    let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
+                    let token = jwt.sign(user, secret, { expiresIn: '24h' });
                     response.body.token.should.equal(token);
                     user.name.should.equal('Roman');
                     user.email.should.equal('roman.sarder@yandex.ru');
@@ -107,7 +108,7 @@ describe('API routes', () => {
                     return knex('users').where('email', 'roman@ya.ru').first()
                 })
                 .then((user) => {
-                    let token = jwt.sign(user, 'supersecret', { expiresIn: '24h' });
+                    let token = jwt.sign(user, secret, { expiresIn: '24h' });
                     response.body.token.should.equal(token);
                     done();
                 })

@@ -1,6 +1,7 @@
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const knex = require('../db/db');
+const secret = process.env.SECRET || 'supersecret';
 
 let validateRegisterInput = (req, res, next) => {
     let name = req.body.name;
@@ -33,7 +34,7 @@ let isLogged = (req, res, next) => {
         err.status = 401;
         next(err);
     }
-    jwt.verify(req.body.token, 'supersecret', (err, decoded) => {
+    jwt.verify(req.body.token, secret, (err, decoded) => {
         if (err) {
             next(new Error('Invalid token provided'));
         } else {
