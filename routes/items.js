@@ -4,7 +4,19 @@ const knex = require('../db/db');
 const middleware = require('../middleware/index');
 
 router.get('/:id', (req, res, next) => {
-    res.send('GET route for one item')
+    knex('items').where('id', req.params.id).first()
+        .then((item) => {
+            if (item) {
+                res.send(item);
+            } else {
+                let err = new Error('Not found');
+                err.status = 404;
+                next(err);
+            }
+        })
+        .catch((err) => {
+            next(err);
+        })
 });
 router.get('/', (req, res, next) => {
     knex('items').select()

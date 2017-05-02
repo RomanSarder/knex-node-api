@@ -22,7 +22,7 @@ if (process.env.NODE_ENV !== 'test') {
 }
 if (app.get('env') === 'development') {
     app.use(function(err, req, res, next) {
-        res.status(err.status || 200);
+        res.status(err.status || 500);
         res.json({
             message: err.message,
             error: err
@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
 
 app.use(function(err, req, res, next) {
     // send error message
-    res.status(err.status || 200).send({ message: err.message });
+    res.status(err.status || 500).send({ message: err.message });
 });
 
 app.listen(3000, () => {

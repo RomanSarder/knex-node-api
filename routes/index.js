@@ -48,7 +48,7 @@ router.post('/register', middleware.validateRegisterInput, (req, res, next) => {
             res.send({ token });
         })
         .catch((err) => {
-            res.send({ message: err.message });
+            next(err);
         })
 })
 

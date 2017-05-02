@@ -2,6 +2,7 @@ process.env.NODE_ENV = 'test';
 
 const chai = require('chai');
 const should = chai.should();
+const request = require('supertest');
 const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const server = require('../index');
@@ -57,14 +58,15 @@ describe('API routes', () => {
                 }).catch(done);
         });
         it('Should not register user if user exists', (done) => {
-            chai.request(server).post('/api/register')
+            request(server)
+                .post('/api/register')
                 .send({
                     name: 'Roman',
                     email: 'roman@ya.ru',
                     password: '123'
                 })
+                .expect(500)
                 .then((res) => {
-                    res.should.have.status(200);
                     res.body.should.not.have.property('token');
                     res.body.should.have.property('message');
                     res.body.message.should.be.a('string');
@@ -102,12 +104,14 @@ describe('API routes', () => {
                 .catch(done);
         });
         it('should return message if invalid data', (done) => {
-            chai.request(server).post('/api/login')
+            request(server)
+                .post('/api/login')
                 .send({
                     email: '123',
                     password: ''
-                }).then((res) => {
-                    res.should.have.status(200);
+                })
+                .expect(500)
+                .then((res) => {
                     res.body.should.have.property('message');
                     res.body.should.not.have.property('token');
                     res.body.message.should.be.a('string');
@@ -171,13 +175,14 @@ describe('API routes', () => {
                 number: 13,
                 state: 0
             };
-            chai.request(server).post('/api/items')
+            request(server).post('/api/items')
                 .send({
                     name: item.name,
                     number: item.number,
                     state: item.state,
                     token: "adsadafafasfasf131231"
                 })
+                .expect(500)
                 .then((res) => {
                     res.body.should.have.property('message');
                     res.body.message.should.be.a('string');
@@ -191,6 +196,25 @@ describe('API routes', () => {
                     done();
                 })
                 .catch(done);
+        });
+    });
+    describe('GET /items/:id', () => {
+        it('should return single item', (done) => {
+            chai.request(server).get('/api/items/1')
+                .then((res) => {
+                    res.body.name.should.equal('Notebook');
+                    res.body.number.should.equal(12);
+                    res.body.state.should.equal(1);
+                    res.body.logs.should.be.a('object');
+                    res.body.should.have.property('author_id');
+                    done()
+                })
+                .catch(done);
+        });
+        it('should return 404 status code for item', (done) => {
+            request(server)
+                .get('/api/items/404')
+                .expect(404, done)
         });
     });
 });
