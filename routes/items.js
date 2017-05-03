@@ -48,7 +48,7 @@ router.post('/', middleware.isLogged, (req, res, next) => {
         })
 });
 router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) => {
-    knex('items').where('author_id', req.params.id).first()
+    knex('items').where('id', req.params.id).first()
         .then((item) => {
             if (!item) {
                 let err = new Error('Not Found');
