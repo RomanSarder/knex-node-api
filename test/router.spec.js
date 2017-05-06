@@ -242,8 +242,8 @@ describe('API routes', () => {
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
-                    res.body.logs.length.should.equal(1);
-                    res.body.logs[0].author.should.equal('Mike');
+                    res.body.logs.length.should.equal(2);
+                    res.body.logs[1].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
                     res.body.state.should.be.a('number');
                     res.body.author_id.should.be.a('number');
@@ -258,9 +258,9 @@ describe('API routes', () => {
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
-                    res.body.logs.length.should.equal(2);
-                    res.body.logs[1].action.should.equal('State changed');
-                    res.body.logs[1].author.should.equal('Mike');
+                    res.body.logs.length.should.equal(3);
+                    res.body.logs[2].action.should.equal('State changed');
+                    res.body.logs[2].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
                     res.body.state.should.be.a('number');
                     res.body.author_id.should.be.a('number');
@@ -275,9 +275,9 @@ describe('API routes', () => {
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
-                    res.body.logs.length.should.equal(1);
-                    res.body.logs[0].action.should.not.equal('State changed');
-                    res.body.logs[0].author.should.equal('Mike');
+                    res.body.logs.length.should.equal(2);
+                    res.body.logs[1].action.should.not.equal('State changed');
+                    res.body.logs[1].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
                     res.body.state.should.be.a('number');
                     res.body.author_id.should.be.a('number');
