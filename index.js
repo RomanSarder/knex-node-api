@@ -5,6 +5,7 @@ const PORT = process.env.PORT || 3000;
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 const index = require('./routes/index');
 const items = require('./routes/items');
@@ -12,6 +13,7 @@ const items = require('./routes/items');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(cors());
 app.use('/api', index);
 app.use('/api/items', items);
 
