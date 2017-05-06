@@ -50,16 +50,12 @@ let isLogged = (req, res, next) => {
         }
     })
 }
-let isOwner = (req, res, next) => {
+let isExist = (req, res, next) => {
     knex('items').where('id', req.params.id).first()
         .then((item) => {
             if (!item) {
                 let error = new Error('Not Found');
                 error.status = 404;
-                next(error);
-            } else if (req.user.uid !== parseInt(item.author_id)) {
-                let error = new Error('You dont have permission to do this');
-                error.status = 403;
                 next(error);
             } else {
                 next();
@@ -71,5 +67,5 @@ module.exports = {
     validateRegisterInput,
     validateLoginInput,
     isLogged,
-    isOwner
+    isExist
 }

@@ -48,7 +48,7 @@ router.post('/', middleware.isLogged, (req, res, next) => {
             next(err);
         })
 });
-router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) => {
+router.patch('/:id', middleware.isLogged, middleware.isExist, (req, res, next) => {
     knex('items').where('id', req.params.id).first()
         .then((item) => {
             if (!item) {
@@ -80,7 +80,7 @@ router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) =
             next(err);
         })
 });
-router.delete('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) => {
+router.delete('/:id', middleware.isLogged, middleware.isExist, (req, res, next) => {
     knex('items').where('id', req.params.id).del().returning('*')
         .then((deleted) => {
             res.send(deleted)
