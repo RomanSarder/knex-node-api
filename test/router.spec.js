@@ -177,6 +177,7 @@ describe('API routes', () => {
                     res.body.logs[0].should.have.property('time');
                     res.body.logs[0].time.should.be.a('number');
                     res.body.logs[0].action.should.be.a('string');
+                    res.body.logs[0].author.should.equal('Roman');
                     return knex('items').where('name', 'Bike').first()
                 })
                 .then((item) => {
@@ -242,6 +243,41 @@ describe('API routes', () => {
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
                     res.body.logs.length.should.equal(1);
+                    res.body.logs[0].author.should.equal('Mike');
+                    res.body.number.should.be.a('number');
+                    res.body.state.should.be.a('number');
+                    res.body.author_id.should.be.a('number');
+                    done();
+                })
+                .catch(done);
+        });
+        it('should update single item and add state changed log to it', (done) => {
+            request(server)
+                .patch('/api/items/2')
+                .send({ name: 'Motorcycle', state: 1, token: sectoken })
+                .expect(200)
+                .then((res) => {
+                    res.body.name.should.equal('Motorcycle');
+                    res.body.logs.length.should.equal(2);
+                    res.body.logs[1].action.should.equal('State changed');
+                    res.body.logs[1].author.should.equal('Mike');
+                    res.body.number.should.be.a('number');
+                    res.body.state.should.be.a('number');
+                    res.body.author_id.should.be.a('number');
+                    done();
+                })
+                .catch(done);
+        });
+        it('should update single item and not add state changed log to it if state not changed', (done) => {
+            request(server)
+                .patch('/api/items/2')
+                .send({ name: 'Motorcycle', state: 0, token: sectoken })
+                .expect(200)
+                .then((res) => {
+                    res.body.name.should.equal('Motorcycle');
+                    res.body.logs.length.should.equal(1);
+                    res.body.logs[0].action.should.not.equal('State changed');
+                    res.body.logs[0].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
                     res.body.state.should.be.a('number');
                     res.body.author_id.should.be.a('number');

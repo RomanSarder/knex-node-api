@@ -30,7 +30,8 @@ router.get('/', (req, res, next) => {
 router.post('/', middleware.isLogged, (req, res, next) => {
     let { name, number, state } = req.body;
     let logs = JSON.stringify([{
-        action: 'Create',
+        action: 'Created',
+        author: req.user.name,
         time: new Date().getTime()
     }]);
     knex('items').insert({
@@ -59,7 +60,10 @@ router.patch('/:id', middleware.isLogged, middleware.isOwner, (req, res, next) =
                 let number = req.body.number || item.number;
                 let state = req.body.state || item.state;
                 let logs = item.logs;
-                logs.push({ action: "Edit", time: new Date().getTime() })
+                logs.push({ action: "Edit", author: req.user.name, time: new Date().getTime() })
+                if (req.body.state && parseInt(req.body.state) !== item.state) {
+                    logs.push({ action: "State changed", author: req.user.name, time: new Date().getTime() })
+                }
                 logs = JSON.stringify(logs);
                 return knex('items').where('id', req.params.id).update({
                     name,
