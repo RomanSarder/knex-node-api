@@ -139,17 +139,17 @@ describe('API routes', () => {
                     res.body[0].number.should.equal(12);
                     res.body[0].author_id.should.equal(1);
                     res.body[0].logs.should.be.a('array');
-                    res.body[0].state.should.equal(1);
+                    res.body[0].state.should.equal('In warehouse');
                     res.body[1].name.should.equal('Gyroscooter');
                     res.body[1].number.should.equal(2);
                     res.body[1].author_id.should.equal(2);
                     res.body[1].logs.should.be.a('array');
-                    res.body[1].state.should.equal(0);
+                    res.body[1].state.should.equal('In transit');
                     res.body[2].name.should.equal('Macbook');
                     res.body[2].number.should.equal(5);
                     res.body[2].author_id.should.equal(3);
                     res.body[2].logs.should.be.a('array');
-                    res.body[2].state.should.equal(1);
+                    res.body[2].state.should.equal('In warehouse');
                     done();
                 }).catch(done);
         });
@@ -159,7 +159,7 @@ describe('API routes', () => {
             let item = {
                 name: 'Bike',
                 number: 13,
-                state: 0
+                state: 'In transit'
             };
             request(server).post('/api/items')
                 .send({
@@ -221,7 +221,7 @@ describe('API routes', () => {
                 .then((res) => {
                     res.body.name.should.equal('Notebook');
                     res.body.number.should.equal(12);
-                    res.body.state.should.equal(1);
+                    res.body.state.should.equal('In warehouse');
                     res.body.logs.should.be.a('array');
                     res.body.should.have.property('author_id');
                     done()
@@ -245,7 +245,7 @@ describe('API routes', () => {
                     res.body.logs.length.should.equal(2);
                     res.body.logs[1].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
-                    res.body.state.should.be.a('number');
+                    res.body.state.should.be.a('string');
                     res.body.author_id.should.be.a('number');
                     done();
                 })
@@ -254,7 +254,7 @@ describe('API routes', () => {
         it('should update single item and add state changed log to it', (done) => {
             request(server)
                 .patch('/api/items/2')
-                .send({ name: 'Motorcycle', state: 1, token: sectoken })
+                .send({ name: 'Motorcycle', state: 'In warehouse', token: sectoken })
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
@@ -262,7 +262,7 @@ describe('API routes', () => {
                     res.body.logs[2].action.should.equal('State changed');
                     res.body.logs[2].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
-                    res.body.state.should.be.a('number');
+                    res.body.state.should.be.a('string');
                     res.body.author_id.should.be.a('number');
                     done();
                 })
@@ -271,7 +271,7 @@ describe('API routes', () => {
         it('should update single item and not add state changed log to it if state not changed', (done) => {
             request(server)
                 .patch('/api/items/2')
-                .send({ name: 'Motorcycle', state: 0, token: sectoken })
+                .send({ name: 'Motorcycle', state: 'In transit', token: sectoken })
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
@@ -279,7 +279,7 @@ describe('API routes', () => {
                     res.body.logs[1].action.should.not.equal('State changed');
                     res.body.logs[1].author.should.equal('Mike');
                     res.body.number.should.be.a('number');
-                    res.body.state.should.be.a('number');
+                    res.body.state.should.be.a('string');
                     res.body.author_id.should.be.a('number');
                     done();
                 })

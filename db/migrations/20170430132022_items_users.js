@@ -16,7 +16,7 @@ exports.up = function(knex, Promise) {
                 .references('uid')
                 .inTable('users');
             table.json('logs');
-            table.integer('state');
+            table.string('state');
         }),
 
     ])

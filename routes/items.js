@@ -61,7 +61,7 @@ router.patch('/:id', middleware.isLogged, middleware.isExist, (req, res, next) =
                 let state = req.body.state || item.state;
                 let logs = item.logs;
                 logs.push({ action: "Edit", author: req.user.name, time: new Date().getTime() })
-                if (req.body.state && parseInt(req.body.state) !== item.state) {
+                if (req.body.state && req.body.state !== item.state) {
                     logs.push({ action: "State changed", author: req.user.name, time: new Date().getTime() })
                 }
                 logs = JSON.stringify(logs);

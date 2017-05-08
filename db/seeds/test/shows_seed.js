@@ -31,7 +31,7 @@ exports.seed = function(knex, Promise) {
             number: 12,
             author_id: 1,
             logs: JSON.stringify([{ author: 'Roman', time: new Date().getTime(), action: 'Created' }]),
-            state: 1
+            state: 'In warehouse'
         });
     }).then(function() {
         return knex('items').insert({
@@ -39,7 +39,7 @@ exports.seed = function(knex, Promise) {
             number: 2,
             author_id: 2,
             logs: JSON.stringify([{ author: 'Mike', time: new Date().getTime(), action: 'Created' }]),
-            state: 0
+            state: 'In transit'
         });
     }).then(function() {
         return knex('items').insert({
@@ -47,7 +47,7 @@ exports.seed = function(knex, Promise) {
             number: 5,
             author_id: 3,
             logs: JSON.stringify([{ author: 'John', time: new Date().getTime(), action: 'Created' }]),
-            state: 1
+            state: 'In warehouse'
         })
     });
 };
