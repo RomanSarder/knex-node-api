@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../db/db');
 const middleware = require('../middleware/index');
+const jwtMiddleware = require('express-jwt');
+const secret = process.env.SECRET || 'supersecret';
 
 router.get('/:id', (req, res, next) => {
     knex('items').where('id', req.params.id).first()
@@ -27,7 +29,7 @@ router.get('/', (req, res, next) => {
             next(err);
         })
 })
-router.post('/', middleware.isLogged, (req, res, next) => {
+router.post('/', jwtMiddleware({ secret: secret }), (req, res, next) => {
     let { name, number, state } = req.body;
     let logs = JSON.stringify([{
         action: 'Created',
@@ -48,7 +50,7 @@ router.post('/', middleware.isLogged, (req, res, next) => {
             next(err);
         })
 });
-router.patch('/:id', middleware.isLogged, middleware.isExist, (req, res, next) => {
+router.patch('/:id', jwtMiddleware({ secret: secret }), middleware.isExist, (req, res, next) => {
     knex('items').where('id', req.params.id).first()
         .then((item) => {
             if (!item) {
@@ -80,7 +82,7 @@ router.patch('/:id', middleware.isLogged, middleware.isExist, (req, res, next) =
             next(err);
         })
 });
-router.delete('/:id', middleware.isLogged, middleware.isExist, (req, res, next) => {
+router.delete('/:id', jwtMiddleware({ secret: secret }), middleware.isExist, (req, res, next) => {
     knex('items').where('id', req.params.id).del().returning('*')
         .then((deleted) => {
             res.send(deleted)

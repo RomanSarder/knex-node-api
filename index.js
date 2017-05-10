@@ -28,7 +28,11 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    // send error message
+    // error handling for express jwt
+    if (err.name === 'UnauthorizedError') {
+        res.status(401).send({ message: 'Invalid token provided' });
+    }
+    //send error
     res.status(err.status || 500).send({ message: err.message });
 });
 

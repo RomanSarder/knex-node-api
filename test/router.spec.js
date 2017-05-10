@@ -166,8 +166,8 @@ describe('API routes', () => {
                     name: item.name,
                     number: item.number,
                     state: item.state,
-                    token: token
                 })
+                .set('Authorization', `Bearer ${token}`)
                 .then((res) => {
                     res.body.name.should.equal(item.name);
                     res.body.number.should.equal(item.number);
@@ -197,9 +197,9 @@ describe('API routes', () => {
                     name: item.name,
                     number: item.number,
                     state: item.state,
-                    token: "adsadafafasfasf131231"
                 })
-                .expect(500)
+                .set('Authorization', '123asfaaga')
+                .expect(401)
                 .then((res) => {
                     res.body.should.have.property('message');
                     res.body.message.should.be.a('string');
@@ -238,7 +238,8 @@ describe('API routes', () => {
         it('should update single item and return it if valid token provided', (done) => {
             request(server)
                 .patch('/api/items/2')
-                .send({ name: 'Motorcycle', token: sectoken })
+                .send({ name: 'Motorcycle' })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
@@ -254,7 +255,8 @@ describe('API routes', () => {
         it('should update single item and add state changed log to it', (done) => {
             request(server)
                 .patch('/api/items/2')
-                .send({ name: 'Motorcycle', state: 'In warehouse', token: sectoken })
+                .send({ name: 'Motorcycle', state: 'In warehouse' })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
@@ -271,7 +273,8 @@ describe('API routes', () => {
         it('should update single item and not add state changed log to it if state not changed', (done) => {
             request(server)
                 .patch('/api/items/2')
-                .send({ name: 'Motorcycle', state: 'In transit', token: sectoken })
+                .send({ name: 'Motorcycle', state: 'In transit' })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .expect(200)
                 .then((res) => {
                     res.body.name.should.equal('Motorcycle');
@@ -288,7 +291,8 @@ describe('API routes', () => {
         it('should return status code 404 if not found', (done) => {
             request(server)
                 .patch('/api/items/40')
-                .send({ name: 'Motorcycle', token: sectoken })
+                .send({ name: 'Motorcycle' })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .expect(404)
                 .then((res) => {
                     res.body.should.have.property('message');
@@ -302,7 +306,7 @@ describe('API routes', () => {
         it('should delete item from db and return it if valid token provided', (done) => {
             request(server)
                 .delete('/api/items/2')
-                .send({ token: sectoken })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .then((res) => {
                     res.body.length.should.equal(1);
                     res.body[0].should.be.a('object');
@@ -317,7 +321,7 @@ describe('API routes', () => {
         it('should return 404 if requested item doesnt exist', (done) => {
             request(server)
                 .delete('/api/items/23')
-                .send({ token: sectoken })
+                .set('Authorization', `Bearer ${sectoken}`)
                 .expect(404)
                 .then((res) => {
                     res.body.should.have.property('message');
